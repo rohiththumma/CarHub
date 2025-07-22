@@ -1,17 +1,8 @@
-Django and Web Server
 Django
 gunicorn
-
-Database
 dj-database-url
 psycopg2-binary
-
-Static Files
 whitenoise
-
-Image Handling (for profile and car pictures)
 Pillow
-
-Django Dependencies (pip will install the correct versions)
 asgiref
 sqlparse
