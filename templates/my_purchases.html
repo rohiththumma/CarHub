@@ -1,0 +1,61 @@
+<!-- File: templates/my_purchases.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}My Purchases - CarHub{% endblock %}
+
+{% block content %}
+    <!-- Page Header -->
+    <header class="text-center mb-12">
+        <h1 class="text-4xl font-bold tracking-tight text-black sm:text-5xl">
+            {{ page_title }}
+        </h1>
+        <p class="mt-4 text-xl text-gray-600">
+            A history of your purchased vehicles. Leave a review to help other buyers.
+        </p>
+    </header>
+
+    <!-- Purchases Container -->
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-lg">
+        <div class="space-y-6">
+            
+            {% for item in purchased_cars %}
+            <div class="p-4 border border-gray-200 rounded-lg flex items-center justify-between">
+                <!-- Car Info -->
+                <div class="flex items-center">
+                    {% if item.car.image %}
+                        <img class="h-24 w-32 object-cover rounded-md" src="{{ item.car.image.url }}" alt="{{ item.car.make }} {{ item.car.model }}">
+                    {% else %}
+                        <div class="h-24 w-32 bg-gray-200 flex items-center justify-center rounded-md">
+                            <span class="text-sm text-gray-500">No Image</span>
+                        </div>
+                    {% endif %}
+                    <div class="ml-4">
+                        <p class="font-semibold text-lg text-black">{{ item.car.year }} {{ item.car.make }} {{ item.car.model }}</p>
+                        <p class="text-sm text-gray-500">Sold by: {{ item.car.seller.username }}</p>
+                    </div>
+                </div>
+
+                <!-- Review Button -->
+                <div>
+                    {% if item.has_reviewed %}
+                        <span class="inline-block bg-green-100 text-green-800 font-bold py-2 px-4 rounded-lg text-sm">
+                            Reviewed
+                        </span>
+                    {% else %}
+                        <a href="{% url 'leave-review' item.car.id %}" class="inline-block bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors duration-300">
+                            Leave a Review
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-12">
+                <h3 class="text-2xl font-semibold text-gray-700">You have no purchase history.</h3>
+                <p class="mt-2 text-gray-500">When you buy a car, it will appear here.</p>
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+{% endblock %}

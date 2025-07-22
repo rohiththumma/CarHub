@@ -1,0 +1,81 @@
+<!-- File: templates/post_car.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}Post a Car - CarHub{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-black">{{ page_title }}</h1>
+        <p class="text-gray-600 mt-2">Fill out the details below to list your vehicle.</p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+        
+        <!-- Manually rendering fields for better control and styling -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+                <label for="{{ form.make.id_for_label }}" class="block text-sm font-medium text-gray-700">Make</label>
+                {{ form.make }}
+            </div>
+            <div>
+                <label for="{{ form.model.id_for_label }}" class="block text-sm font-medium text-gray-700">Model</label>
+                {{ form.model }}
+            </div>
+            <div>
+                <label for="{{ form.year.id_for_label }}" class="block text-sm font-medium text-gray-700">Year</label>
+                {{ form.year }}
+            </div>
+            <div>
+                <label for="{{ form.price.id_for_label }}" class="block text-sm font-medium text-gray-700">Price (INR)</label>
+                {{ form.price }}
+            </div>
+        </div>
+
+        <div>
+            <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-gray-700">Image</label>
+            {{ form.image }}
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div>
+                <label for="{{ form.mileage.id_for_label }}" class="block text-sm font-medium text-gray-700">Mileage (KMPL)</label>
+                {{ form.mileage }}
+            </div>
+            <div>
+                <label for="{{ form.transmission.id_for_label }}" class="block text-sm font-medium text-gray-700">Transmission</label>
+                {{ form.transmission }}
+            </div>
+            <div>
+                <label for="{{ form.fuel_type.id_for_label }}" class="block text-sm font-medium text-gray-700">Fuel Type</label>
+                {{ form.fuel_type }}
+            </div>
+        </div>
+
+        <div>
+            <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700">Description</label>
+            {{ form.description }}
+        </div>
+
+        <div>
+            <label for="{{ form.location_city.id_for_label }}" class="block text-sm font-medium text-gray-700">Location (City)</label>
+            {{ form.location_city }}
+        </div>
+
+        <!-- --- THIS IS THE NEW NOC CHECKBOX --- -->
+        <div class="flex items-center space-x-3 border-t border-gray-200 pt-6">
+            {{ form.noc_available }}
+            <label for="{{ form.noc_available.id_for_label }}" class="text-sm font-medium text-gray-700">{{ form.noc_available.label }}</label>
+        </div>
+
+
+        <div class="pt-4">
+            <button type="submit" class="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-700 transition-colors duration-300 text-lg">
+                Submit Listing for Approval
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

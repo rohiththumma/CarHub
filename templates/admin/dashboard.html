@@ -1,0 +1,139 @@
+<!-- File: templates/admin/dashboard.html -->
+
+{% extends "admin/base_site.html" %}
+{% block title %}Dashboard | CarHub Admin{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">🚗 CarHub Administration</a></h1>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <!-- METRIC CARDS -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div style="background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h2 style="font-size: 1.5rem; font-weight: bold; color: #333;">{{ total_users }}</h2>
+            <p style="color: #666;">Total Users</p>
+        </div>
+        <div style="background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h2 style="font-size: 1.5rem; font-weight: bold; color: #333;">{{ total_listings }}</h2>
+            <p style="color: #666;">Total Listings</p>
+        </div>
+        <div style="background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h2 style="font-size: 1.5rem; font-weight: bold; color: #10B981;">{{ active_listings }}</h2>
+            <p style="color: #666;">Active Listings</p>
+        </div>
+        <div style="background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h2 style="font-size: 1.5rem; font-weight: bold; color: #EF4444;">{{ sold_listings }}</h2>
+            <p style="color: #666;">Cars Sold</p>
+        </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+        <div style="background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h3 style="font-weight: bold; margin-bottom: 1rem;">Listings by Brand</h3>
+            <canvas id="brandChart"></canvas>
+        </div>
+        <div style="background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h3 style="font-weight: bold; margin-bottom: 1rem;">Listings by Status</h3>
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+
+    <!-- This loads the Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Safely pass Django data to JavaScript using the json_script tag -->
+    {{ brand_labels|json_script:"brand-labels" }}
+    {{ brand_data|json_script:"brand-data" }}
+    {{ status_labels|json_script:"status-labels" }}
+    {{ status_data|json_script:"status-data" }}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Helper function to safely retrieve and parse data
+            const getChartData = (id) => {
+                const element = document.getElementById(id);
+                // If the element doesn't exist (because the data was empty), return an empty array
+                if (!element) {
+                    return [];
+                }
+                return JSON.parse(element.textContent);
+            };
+
+            // Retrieve and parse the data safely
+            const brandLabels = getChartData('brand-labels');
+            const brandData = getChartData('brand-data');
+            const statusLabels = getChartData('status-labels');
+            const statusData = getChartData('status-data');
+
+            // Data for Brand Chart (Bar Chart)
+            const brandCtx = document.getElementById('brandChart').getContext('2d');
+            new Chart(brandCtx, {
+                type: 'bar',
+                data: {
+                    labels: brandLabels,
+                    datasets: [{
+                        label: '# of Listings',
+                        data: brandData,
+                        backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Data for Status Chart (Doughnut Chart)
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        label: 'Listing Status',
+                        data: statusData,
+                        backgroundColor: [
+                            'rgba(251, 191, 36, 0.7)', // Pending
+                            'rgba(16, 185, 129, 0.7)', // Active
+                            'rgba(156, 163, 175, 0.7)', // Sold
+                            'rgba(239, 68, 68, 0.7)',  // Rejected
+                        ],
+                        borderColor: [
+                            'rgba(251, 191, 36, 1)',
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(156, 163, 175, 1)',
+                            'rgba(239, 68, 68, 1)',
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</div>
+{% endblock %}

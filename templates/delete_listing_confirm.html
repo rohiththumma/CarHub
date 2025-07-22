@@ -1,0 +1,30 @@
+<!-- File: templates/delete_listing_confirm.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}Confirm Deletion - CarHub{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto bg-white p-8 rounded-xl shadow-lg text-center">
+    <h1 class="text-3xl font-bold text-black">Confirm Deletion</h1>
+    <p class="text-gray-600 mt-4 text-lg">
+        Are you sure you want to permanently delete the listing for:
+    </p>
+    <p class="text-red-600 font-bold text-2xl my-4">
+        {{ listing.year }} {{ listing.make }} {{ listing.model }}?
+    </p>
+    <p class="text-gray-500">This action cannot be undone.</p>
+
+    <form method="POST" class="mt-8">
+        {% csrf_token %}
+        <div class="flex justify-center space-x-4">
+            <a href="{% url 'my-listings' %}" class="bg-gray-200 text-black font-bold py-3 px-6 rounded-lg hover:bg-gray-300 transition-colors duration-300">
+                Cancel
+            </a>
+            <button type="submit" class="bg-red-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-red-700 transition-colors duration-300">
+                Yes, Delete It
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+<!-- File: templates/base.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>{% block title %}CarHub{% endblock %}</title>
+    <style> body { font-family: 'Poppins', sans-serif; } </style>
+    {% block head_extra %}{% endblock %}
+</head>
+<body class="bg-gray-50">
+
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <a href="{% url 'landing-page' %}" class="text-2xl font-bold text-red-600">🚗 CarHub</a>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-center space-x-4">
+                        <a href="{% url 'car-list' %}" class="text-black hover:bg-red-600 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Browse Cars</a>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'inbox' %}" class="text-black hover:bg-red-600 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Inbox</a>
+                            <a href="{% url 'wishlist' %}" class="text-black hover:bg-red-600 hover:text-white px-3 py-2 rounded-md text-sm font-medium">My Wishlist</a>
+                            <a href="{% url 'my-purchases' %}" class="text-black hover:bg-red-600 hover:text-white px-3 py-2 rounded-md text-sm font-medium">My Purchases</a>
+                            <a href="{% url 'my-listings' %}" class="text-black hover:bg-red-600 hover:text-white px-3 py-2 rounded-md text-sm font-medium">My Listings</a>
+                            <a href="{% url 'post-car' %}" class="text-black hover:bg-red-600 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Post a Car</a>
+                            
+                            <!-- --- UPDATED PROFILE LINK WITH IMAGE --- -->
+                            <a href="{% url 'profile' username=user.username %}" class="flex items-center space-x-2 text-gray-700 pl-2 pr-3 py-1 rounded-full hover:bg-gray-100 transition-colors">
+                                <img class="h-8 w-8 rounded-full object-cover" src="{{ user.profile.image.url }}" alt="Profile Picture">
+                                <span class="text-sm font-medium">Welcome, {{ user.username }}</span>
+                            </a>
+                            
+                            <a href="{% url 'logout' %}" class="text-black bg-gray-200 hover:bg-red-600 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Logout</a>
+                        {% else %}
+                            <a href="{% url 'login' %}" class="text-black hover:bg-red-600 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Login</a>
+                            <a href="{% url 'signup' %}" class="bg-red-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-red-700">Sign Up</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content block -->
+    <main class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        {% if messages %}
+            <div class="mb-8 space-y-4">
+            {% for message in messages %}
+                <div class="p-4 rounded-lg text-center 
+                    {% if message.tags == 'success' %} bg-green-100 text-green-800 
+                    {% else %} bg-red-100 text-red-800 {% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Placeholder for custom JavaScript -->
+    {% block scripts %}{% endblock %}
+
+</body>
+</html>

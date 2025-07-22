@@ -1,0 +1,9 @@
+Hello {{ receiver_name }},
+
+You have received a new message from {{ sender_name }} regarding your listing for the {{ car_name }}.
+
+"{{ message_content }}"
+You can view and reply to this message by clicking the link below:
+{{ conversation_url }}
+
+Thank you for using CarHub!

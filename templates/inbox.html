@@ -1,0 +1,45 @@
+<!-- File: templates/inbox.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}Inbox - CarHub{% endblock %}
+
+{% block content %}
+    <header class="text-center mb-12">
+        <h1 class="text-4xl font-bold tracking-tight text-black sm:text-5xl">{{ page_title }}</h1>
+        <p class="mt-4 text-xl text-gray-600">Your conversations with other users.</p>
+    </header>
+
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-lg">
+        <div class="space-y-4">
+            
+            <!-- We loop through 'conversation_threads' provided by the inbox_view -->
+            {% for thread in conversation_threads %}
+                <!-- This link now correctly uses the other_user's ID to build the URL -->
+                <a href="{% url 'conversation' listing_pk=thread.latest_message.listing.id other_user_pk=thread.other_user.id %}" class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                    <div class="flex justify-between items-center mb-2">
+                        <p class="text-sm text-gray-500">
+                            <!-- The other user's name is now displayed correctly -->
+                            Conversation with: <span class="font-semibold text-black">{{ thread.other_user.username }}</span>
+                        </p>
+                        <p class="text-xs text-gray-400">{{ thread.latest_message.timestamp|date:"d M Y, P" }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="text-sm text-gray-500">
+                            Regarding: <span class="font-semibold text-red-600">{{ thread.latest_message.listing.year }} {{ thread.latest_message.listing.make }} {{ thread.latest_message.listing.model }}</span>
+                        </p>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded-md">
+                        <!-- Display the actual message content from the latest message -->
+                        <p class="text-gray-800 truncate"><em>Latest message:</em> {{ thread.latest_message.content }}</p>
+                    </div>
+                </a>
+            {% empty %}
+                <div class="text-center py-12">
+                    <h3 class="text-2xl font-semibold text-gray-700">Your inbox is empty.</h3>
+                    <p class="mt-2 text-gray-500">Start a conversation by messaging a seller on a car listing page.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

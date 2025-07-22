@@ -1,0 +1,141 @@
+<!-- File: templates/car_list.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}Explore Our Cars - CarHub{% endblock %}
+
+{% block content %}
+    <!-- Page Header -->
+    <header class="text-center mb-8">
+        <h1 class="text-4xl font-bold tracking-tight text-black sm:text-5xl">
+            Explore Our Available Cars
+        </h1>
+        <p class="mt-4 text-xl text-gray-600">
+            Select up to 3 cars to compare their features side-by-side.
+        </p>
+    </header>
+
+    <!-- Search and Filter Section (remains the same) -->
+    <div class="max-w-4xl mx-auto mb-12 bg-white p-6 rounded-lg shadow">
+        <form method="GET" action="{% url 'car-list' %}" class="space-y-4">
+            <div class="relative"><input type="text" name="q" value="{{ search_query|default:'' }}" class="w-full px-5 py-3 text-lg border-2 border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Search by Make or Model (e.g., Tata, Nexon)..."></div>
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div><label for="{{ filter_form.transmission.id_for_label }}" class="block text-sm font-medium text-gray-700">Transmission</label>{{ filter_form.transmission }}</div>
+                <div><label for="{{ filter_form.fuel_type.id_for_label }}" class="block text-sm font-medium text-gray-700">Fuel Type</label>{{ filter_form.fuel_type }}</div>
+                <div><label for="{{ filter_form.min_price.id_for_label }}" class="block text-sm font-medium text-gray-700">Min Price</label>{{ filter_form.min_price }}</div>
+                <div><label for="{{ filter_form.max_price.id_for_label }}" class="block text-sm font-medium text-gray-700">Max Price</label>{{ filter_form.max_price }}</div>
+            </div>
+            <div class="text-center pt-4"><button type="submit" class="bg-red-600 text-white font-bold py-3 px-8 rounded-full hover:bg-red-700 transition-colors duration-300 text-lg">Apply Filters</button></div>
+        </form>
+    </div>
+
+    <!-- Grid for Car Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        
+        {% for car in listings %}
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-300 ease-in-out">
+            {% if car.image %}<img class="h-56 w-full object-cover" src="{{ car.image.url }}" alt="{{ car.make }} {{ car.model }}">
+            {% else %}<img class="h-56 w-full object-cover" src="https://placehold.co/600x400/ef4444/ffffff?text=No+Image" alt="No image available">
+            {% endif %}
+            <div class="p-6">
+                <div class="flex justify-between items-start">
+                    <h2 class="text-2xl font-bold text-black">{{ car.make }} {{ car.model }}</h2>
+                    <span class="bg-red-100 text-red-800 text-lg font-semibold px-3 py-1 rounded-full">₹{{ car.price|floatformat:"-2g" }}</span>
+                </div>
+                <p class="text-gray-600 text-sm mt-1">{{ car.year }} Model</p>
+                <div class="mt-4 flex justify-between items-center">
+                    <!-- --- THIS IS THE NEW COMPARE CHECKBOX --- -->
+                    <div class="flex items-center">
+                        <input id="compare-{{ car.id }}" type="checkbox" value="{{ car.id }}" class="compare-checkbox h-5 w-5 text-red-600 border-gray-300 rounded focus:ring-red-500">
+                        <label for="compare-{{ car.id }}" class="ml-2 text-sm text-gray-700">Compare</label>
+                    </div>
+                    <a href="{% url 'car-detail' car.id %}" class="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors duration-300">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-1 sm:col-span-2 lg:col-span-3 text-center py-12">
+            <h3 class="text-2xl font-semibold text-gray-700">No Cars Found</h3>
+            <p class="mt-2 text-gray-500">Try adjusting your search or filters.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- --- FLOATING COMPARE BUTTON --- -->
+    <div id="compare-bar" class="hidden fixed bottom-10 right-10 z-50">
+        <button id="compare-button" class="bg-red-600 text-white font-bold py-4 px-6 rounded-full shadow-lg text-lg flex items-center">
+            Compare Items <span id="compare-count" class="ml-2 bg-white text-red-600 text-sm font-bold w-6 h-6 rounded-full flex items-center justify-center">0</span>
+        </button>
+    </div>
+
+    <!-- --- JAVASCRIPT LOGIC --- -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('.compare-checkbox');
+            const compareBar = document.getElementById('compare-bar');
+            const compareButton = document.getElementById('compare-button');
+            const compareCount = document.getElementById('compare-count');
+            
+            // Use sessionStorage to remember selections on the same tab
+            let selectedCars = JSON.parse(sessionStorage.getItem('selectedCars')) || [];
+            const MAX_COMPARE = 3;
+
+            function updateUI() {
+                // Sync checkboxes with our stored selection
+                checkboxes.forEach(cb => {
+                    cb.checked = selectedCars.includes(cb.value);
+                });
+
+                const count = selectedCars.length;
+                compareCount.textContent = count;
+
+                // Show/hide the compare bar
+                if (count > 0) {
+                    compareBar.classList.remove('hidden');
+                } else {
+                    compareBar.classList.add('hidden');
+                }
+
+                // Disable checkboxes if max is reached
+                if (count >= MAX_COMPARE) {
+                    checkboxes.forEach(cb => {
+                        if (!cb.checked) {
+                            cb.disabled = true;
+                        }
+                    });
+                } else {
+                    checkboxes.forEach(cb => {
+                        cb.disabled = false;
+                    });
+                }
+            }
+
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        if (selectedCars.length < MAX_COMPARE) {
+                            selectedCars.push(this.value);
+                        }
+                    } else {
+                        selectedCars = selectedCars.filter(id => id !== this.value);
+                    }
+                    sessionStorage.setItem('selectedCars', JSON.stringify(selectedCars));
+                    updateUI();
+                });
+            });
+
+            compareButton.addEventListener('click', function() {
+                if (selectedCars.length > 1) {
+                    const ids = selectedCars.join(',');
+                    // We will create this '/compare/' URL in the next step
+                    window.location.href = `/compare/?ids=${ids}`;
+                } else {
+                    alert('Please select at least 2 cars to compare.');
+                }
+            });
+
+            // Initial UI update on page load
+            updateUI();
+        });
+    </script>
+{% endblock %}

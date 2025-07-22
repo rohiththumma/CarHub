@@ -1,0 +1,76 @@
+<!-- File: templates/my_listings.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}{{ page_title }} - CarHub{% endblock %}
+
+{% block content %}
+    <!-- Page Header -->
+    <header class="text-center mb-12">
+        <h1 class="text-4xl font-bold tracking-tight text-black sm:text-5xl">
+            {{ page_title }}
+        </h1>
+        <p class="mt-4 text-xl text-gray-600">
+            Manage your car listings. You can view, edit, or delete them here.
+        </p>
+    </header>
+
+    <!-- Listings Container -->
+    <div class="max-w-5xl mx-auto">
+        <div class="space-y-6">
+            
+            {% for listing in listings %}
+            <div class="bg-white p-4 border border-gray-200 rounded-xl shadow-sm flex flex-col md:flex-row items-center justify-between">
+                <!-- Car Info -->
+                <div class="flex items-center mb-4 md:mb-0">
+                    {% if listing.image %}
+                        <img class="h-24 w-32 object-cover rounded-md" src="{{ listing.image.url }}" alt="{{ listing.make }} {{ listing.model }}">
+                    {% else %}
+                        <div class="h-24 w-32 bg-gray-200 flex items-center justify-center rounded-md">
+                            <span class="text-sm text-gray-500">No Image</span>
+                        </div>
+                    {% endif %}
+                    <div class="ml-4">
+                        <p class="font-semibold text-lg text-black">{{ listing.year }} {{ listing.make }} {{ listing.model }}</p>
+                        <p class="text-sm text-gray-500">Price: ₹{{ listing.price|floatformat:2 }}</p>
+                        <!-- Status Badge -->
+                        <p class="text-sm mt-1">
+                            Status: 
+                            {% if listing.status == 'ACTIVE' %}
+                                <span class="font-bold text-green-600">{{ listing.get_status_display }}</span>
+                            {% elif listing.status == 'SOLD' %}
+                                <span class="font-bold text-red-600">{{ listing.get_status_display }}</span>
+                            {% else %}
+                                <span class="font-bold text-yellow-600">{{ listing.get_status_display }}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex items-center space-x-2">
+                    <!-- THIS IS THE CORRECTED VIEW BUTTON -->
+                    <a href="{% url 'my-listing-detail' listing.id %}" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-300">
+                        View
+                    </a>
+                    <a href="{% url 'edit-listing' listing.id %}" class="bg-gray-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-300">
+                        Edit
+                    </a>
+                    <a href="{% url 'delete-listing' listing.id %}" class="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors duration-300">
+                        Delete
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-16 bg-white rounded-xl shadow-sm">
+                <h3 class="text-2xl font-semibold text-gray-700">You haven't listed any cars yet.</h3>
+                <p class="mt-2 text-gray-500">Why not sell your car with us?</p>
+                <a href="{% url 'post-car' %}" class="mt-6 inline-block bg-red-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-red-700 transition-colors duration-300">
+                    Post a Car for Sale
+                </a>
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+{% endblock %}

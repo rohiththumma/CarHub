@@ -1,0 +1,76 @@
+<!-- File: templates/car_detail.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}{{ car.year }} {{ car.make }} {{ car.model }} - CarHub{% endblock %}
+
+{% block content %}
+    <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2">
+            
+            <!-- Image Section -->
+            <div>
+                {% if car.image %}
+                    <img class="h-full w-full object-cover" src="{{ car.image.url }}" alt="Image of {{ car.make }} {{ car.model }}">
+                {% else %}
+                    <img class="h-full w-full object-cover" 
+                         src="https://placehold.co/800x600/ef4444/ffffff?text=No+Image" 
+                         alt="No image available">
+                {% endif %}
+            </div>
+
+            <!-- Details Section -->
+            <div class="p-8 flex flex-col">
+                <div>
+                    <p class="text-sm font-semibold text-red-600 uppercase tracking-wide">{{ car.year }} &bull; {{ car.location_city }}</p>
+                    <h1 class="text-4xl font-bold text-black mt-1">{{ car.make }} {{ car.model }}</h1>
+                    <p class="text-3xl font-light text-gray-800 mt-4">₹{{ car.price|floatformat:"-2g" }}</p>
+                </div>
+
+                <!-- Description -->
+                <div class="mt-8 border-t border-gray-200 pt-6">
+                    <h3 class="text-lg font-bold text-black">Description</h3>
+                    <p class="mt-2 text-gray-600 whitespace-pre-line">{{ car.description }}</p>
+                </div>
+
+                <!-- Wishlist Button -->
+                <div class="mt-6 flex justify-end">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'toggle-wishlist' car.id %}" class="flex-shrink-0 p-3 rounded-lg 
+                            {% if car in user.wishlist_items.all %} bg-red-100 text-red-600 
+                            {% else %} bg-gray-200 text-gray-600 {% endif %} 
+                            hover:bg-red-100 hover:text-red-600 transition-colors duration-300">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path></svg>
+                        </a>
+                    {% endif %}
+                </div>
+
+                <!-- Contact Seller Form -->
+                <div class="mt-8 flex-grow flex flex-col justify-end border-t border-gray-200 pt-6">
+                    <h3 class="text-lg font-bold text-black mb-4">Contact Seller: {{ car.seller.username }}</h3>
+                    
+                    {% if user.is_authenticated %}
+                        {% if user == car.seller %}
+                            <div class="bg-blue-100 text-blue-800 p-4 rounded-lg text-center">
+                                <p>This is your own listing.</p>
+                            </div>
+                        {% else %}
+                            <form method="POST">
+                                {% csrf_token %}
+                                {{ message_form.as_p }}
+                                <button type="submit" class="mt-4 w-full bg-red-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-red-700 transition-colors duration-300 text-lg">
+                                    Send Message
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <div class="bg-gray-100 p-4 rounded-lg text-center">
+                            <p class="text-gray-700">You must be logged in to contact the seller.</p>
+                            <a href="{% url 'login' %}?next={{ request.path }}" class="mt-2 inline-block text-red-600 font-semibold hover:underline">Login Now</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

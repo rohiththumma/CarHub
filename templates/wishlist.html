@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}My Wishlist - CarHub{% endblock %}
+
+{% block content %}
+    <!-- Page Header -->
+    <header class="text-center mb-12">
+        <h1 class="text-4xl font-bold tracking-tight text-black sm:text-5xl">
+            {{ page_title }}
+        </h1>
+        <p class="mt-4 text-xl text-gray-600">
+            Your saved cars. Click "View Details" to see them again.
+        </p>
+    </header>
+
+    <!-- Grid for Car Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        
+        {% for car in listings %}
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-300 ease-in-out">
+            {% if car.image %}
+                <img class="h-56 w-full object-cover" src="{{ car.image.url }}" alt="{{ car.make }} {{ car.model }}">
+            {% else %}
+                <!-- THIS IS THE CORRECTED IMAGE LINK -->
+                <img class="h-56 w-full object-cover" src="https://placehold.co/600x400/ef4444/ffffff?text=No+Image" alt="No image available">
+            {% endif %}
+            
+            <div class="p-6">
+                <div class="flex justify-between items-start">
+                    <h2 class="text-2xl font-bold text-black">{{ car.make }} {{ car.model }}</h2>
+                    <span class="bg-red-100 text-red-800 text-lg font-semibold px-3 py-1 rounded-full">₹{{ car.price|floatformat:"-2g" }}</span>
+                </div>
+                <p class="text-gray-600 text-sm mt-1">{{ car.year }} Model</p>
+                <div class="mt-4 flex justify-between items-center">
+                    <p class="text-sm text-gray-500">📍 {{ car.location_city }}</p>
+                    <a href="{% url 'car-detail' car.id %}" class="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors duration-300">
+                        View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-1 sm:col-span-2 lg:col-span-3 text-center py-12">
+            <h3 class="text-2xl font-semibold text-gray-700">Your wishlist is empty.</h3>
+            <p class="mt-2 text-gray-500">Browse cars and click the heart icon to save them here!</p>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}

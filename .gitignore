@@ -1,0 +1,12 @@
+# Git Ignore File for Django Projects
+
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+db.sqlite3
+media/
+staticfiles/
+.env
+venv/

@@ -1,0 +1,107 @@
+<!-- File: templates/compare.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}Compare Cars - CarHub{% endblock %}
+
+{% block content %}
+    <!-- Page Header -->
+    <header class="text-center mb-12">
+        <h1 class="text-4xl font-bold tracking-tight text-black sm:text-5xl">
+            {{ page_title }}
+        </h1>
+        <p class="mt-4 text-xl text-gray-600">
+            A side-by-side comparison of your selected cars.
+        </p>
+    </header>
+
+    <!-- Comparison Table -->
+    <div class="bg-white rounded-lg shadow-lg overflow-x-auto">
+        {% if cars %}
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-1/4">
+                        Feature
+                    </th>
+                    {% for car in cars %}
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                        {{ car.make }} {{ car.model }}
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                <!-- Image Row -->
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Image</td>
+                    {% for car in cars %}
+                    <td class="px-6 py-4">
+                        {% if car.image %}
+                            <img class="h-32 w-auto object-cover rounded-md" src="{{ car.image.url }}" alt="{{ car.make }} {{ car.model }}">
+                        {% else %}
+                            <div class="h-32 w-full bg-gray-200 flex items-center justify-center rounded-md">
+                                <span class="text-sm text-gray-500">No Image</span>
+                            </div>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                <!-- Price Row -->
+                <tr class="bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Price</td>
+                    {% for car in cars %}
+                    <td class="px-6 py-4 whitespace-nowrap text-lg font-bold text-red-600">₹{{ car.price|floatformat:"-2g" }}</td>
+                    {% endfor %}
+                </tr>
+                <!-- Year Row -->
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Year</td>
+                    {% for car in cars %}
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ car.year }}</td>
+                    {% endfor %}
+                </tr>
+                <!-- Mileage Row -->
+                <tr class="bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Mileage</td>
+                    {% for car in cars %}
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ car.mileage }} kmpl</td>
+                    {% endfor %}
+                </tr>
+                <!-- Fuel Type Row -->
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Fuel Type</td>
+                    {% for car in cars %}
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ car.fuel_type }}</td>
+                    {% endfor %}
+                </tr>
+                <!-- Transmission Row -->
+                <tr class="bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Transmission</td>
+                    {% for car in cars %}
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ car.transmission }}</td>
+                    {% endfor %}
+                </tr>
+                <!-- View Details Row -->
+                <tr>
+                    <td class="px-6 py-4"></td>
+                    {% for car in cars %}
+                    <td class="px-6 py-4">
+                        <a href="{% url 'car-detail' car.id %}" class="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors duration-300">
+                            View Full Details
+                        </a>
+                    </td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-12">
+            <h3 class="text-2xl font-semibold text-gray-700">No cars selected for comparison.</h3>
+            <a href="{% url 'car-list' %}" class="mt-4 inline-block bg-red-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-red-700 transition-colors duration-300">
+                Go Back and Select Cars
+            </a>
+        </div>
+        {% endif %}
+    </div>
+{% endblock %}
