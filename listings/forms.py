@@ -4,16 +4,15 @@ from django import forms
 from django.contrib.auth.models import User
 from .models import CarListing, Message, Review, Profile, TRANSMISSION_CHOICES, FUEL_TYPE_CHOICES
 
+# ... (CarListingForm, UserUpdateForm, ProfileUpdateForm, MessageForm remain the same) ...
 class CarListingForm(forms.ModelForm):
     additional_images = forms.FileField(
         required=False,
-        # --- FIX: Use a simple FileInput. The 'multiple' attribute will be added in the template. ---
         widget=forms.FileInput(attrs={
             'class': 'w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100'
         }),
         label="Additional Photos (Select multiple files)"
     )
-
     class Meta:
         model = CarListing
         fields = [
@@ -22,6 +21,7 @@ class CarListingForm(forms.ModelForm):
             'noc_available',
             'description', 'location_city'
         ]
+        # ... widgets ...
         widgets = {
             'make': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500'}),
             'model': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500'}),
@@ -37,7 +37,6 @@ class CarListingForm(forms.ModelForm):
             'location_city': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500'}),
         }
 
-# ... (The rest of the file is unchanged) ...
 class UserUpdateForm(forms.ModelForm):
     email = forms.EmailField(required=True)
     class Meta:
@@ -57,6 +56,37 @@ class ProfileUpdateForm(forms.ModelForm):
             'image': forms.FileInput(attrs={'class': 'w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100'}),
         }
 
+# --- UPDATED CarFilterForm ---
+class CarFilterForm(forms.Form):
+    # Define common choices and widget attributes
+    ANY_CHOICE = [('', 'Any')]
+    WIDGET_ATTRS = {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500'}
+
+    # Existing fields
+    transmission = forms.ChoiceField(choices=ANY_CHOICE + list(TRANSMISSION_CHOICES), required=False, widget=forms.Select(attrs=WIDGET_ATTRS))
+    fuel_type = forms.ChoiceField(choices=ANY_CHOICE + list(FUEL_TYPE_CHOICES), required=False, widget=forms.Select(attrs=WIDGET_ATTRS))
+    min_price = forms.IntegerField(required=False, min_value=0, widget=forms.NumberInput(attrs={**WIDGET_ATTRS, 'placeholder': 'Min Price'}))
+    max_price = forms.IntegerField(required=False, min_value=0, widget=forms.NumberInput(attrs={**WIDGET_ATTRS, 'placeholder': 'Max Price'}))
+
+    # --- NEW DYNAMIC FIELDS ---
+    # We define them here, but their choices will be set in the view.
+    make = forms.ChoiceField(required=False, widget=forms.Select(attrs=WIDGET_ATTRS))
+    location_city = forms.ChoiceField(required=False, widget=forms.Select(attrs=WIDGET_ATTRS))
+    year = forms.IntegerField(required=False, min_value=1900, widget=forms.NumberInput(attrs={**WIDGET_ATTRS, 'placeholder': 'e.g., 2021'}))
+
+    # This special method allows us to pass dynamic choices from the view
+    def __init__(self, *args, **kwargs):
+        # Pop the custom choices from kwargs before calling super()
+        make_choices = kwargs.pop('make_choices', [])
+        city_choices = kwargs.pop('city_choices', [])
+        
+        super(CarFilterForm, self).__init__(*args, **kwargs)
+
+        # Set the choices for the dynamic fields
+        self.fields['make'].choices = self.ANY_CHOICE + make_choices
+        self.fields['location_city'].choices = self.ANY_CHOICE + city_choices
+
+# ... (ReviewForm and MessageForm remain the same) ...
 class MessageForm(forms.ModelForm):
     class Meta:
         model = Message
@@ -69,15 +99,6 @@ class MessageForm(forms.ModelForm):
             })
         }
         labels = {'content': '',}
-
-class CarFilterForm(forms.Form):
-    ANY_CHOICE = [('', 'Any')]
-    TRANSMISSION_FILTER_CHOICES = ANY_CHOICE + list(TRANSMISSION_CHOICES)
-    FUEL_TYPE_FILTER_CHOICES = ANY_CHOICE + list(FUEL_TYPE_CHOICES)
-    transmission = forms.ChoiceField(choices=TRANSMISSION_FILTER_CHOICES, required=False, widget=forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500'}))
-    fuel_type = forms.ChoiceField(choices=FUEL_TYPE_FILTER_CHOICES, required=False, widget=forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500'}))
-    min_price = forms.IntegerField(required=False, min_value=0, widget=forms.NumberInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500', 'placeholder': 'Min Price'}))
-    max_price = forms.IntegerField(required=False, min_value=0, widget=forms.NumberInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500', 'placeholder': 'Max Price'}))
 
 class ReviewForm(forms.ModelForm):
     class Meta:

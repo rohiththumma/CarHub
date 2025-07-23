@@ -4,7 +4,6 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-# --- Import CarImage ---
 from .models import CarListing, Message, User, Review, Profile, CarImage
 from .forms import (
     CarListingForm, UserUpdateForm, ProfileUpdateForm, 
@@ -13,27 +12,56 @@ from .forms import (
 from django.contrib.auth import logout
 from django.db.models import Q, Avg
 
-# ... (all other views from landing_page_view to logout_view remain the same) ...
+# ... (all other views from landing_page_view to inbox_view remain the same) ...
 def landing_page_view(request):
     featured_listings = CarListing.objects.filter(status='ACTIVE').order_by('-created_at')[:3]
     return render(request, 'landing.html', {'featured_listings': featured_listings})
 
 def car_list_view(request):
     queryset = CarListing.objects.filter(status='ACTIVE').order_by('-created_at')
+    
+    make_choices = list(CarListing.objects.filter(status='ACTIVE').values_list('make', flat=True).distinct().order_by('make'))
+    make_choices_for_form = [(make, make) for make in make_choices]
+
+    city_choices = list(CarListing.objects.filter(status='ACTIVE').values_list('location_city', flat=True).distinct().order_by('location_city'))
+    city_choices_for_form = [(city, city) for city in city_choices]
+
+    filter_form = CarFilterForm(request.GET, make_choices=make_choices_for_form, city_choices=city_choices_for_form)
+
     query = request.GET.get('q')
-    filter_form = CarFilterForm(request.GET)
     if query:
         queryset = queryset.filter(Q(make__icontains=query) | Q(model__icontains=query))
+
     if filter_form.is_valid():
         transmission = filter_form.cleaned_data.get('transmission')
         fuel_type = filter_form.cleaned_data.get('fuel_type')
         min_price = filter_form.cleaned_data.get('min_price')
         max_price = filter_form.cleaned_data.get('max_price')
-        if transmission: queryset = queryset.filter(transmission=transmission)
-        if fuel_type: queryset = queryset.filter(fuel_type=fuel_type)
-        if min_price is not None: queryset = queryset.filter(price__gte=min_price)
-        if max_price is not None: queryset = queryset.filter(price__lte=max_price)
-    return render(request, 'car_list.html', {'listings': queryset, 'search_query': query, 'filter_form': filter_form})
+        make = filter_form.cleaned_data.get('make')
+        location_city = filter_form.cleaned_data.get('location_city')
+        year = filter_form.cleaned_data.get('year')
+
+        if transmission:
+            queryset = queryset.filter(transmission=transmission)
+        if fuel_type:
+            queryset = queryset.filter(fuel_type=fuel_type)
+        if min_price is not None:
+            queryset = queryset.filter(price__gte=min_price)
+        if max_price is not None:
+            queryset = queryset.filter(price__lte=max_price)
+        if make:
+            queryset = queryset.filter(make=make)
+        if location_city:
+            queryset = queryset.filter(location_city=location_city)
+        if year:
+            queryset = queryset.filter(year=year)
+            
+    context = {
+        'listings': queryset,
+        'search_query': query,
+        'filter_form': filter_form
+    }
+    return render(request, 'car_list.html', context)
 
 def car_detail_view(request, pk):
     car = get_object_or_404(CarListing, id=pk, status='ACTIVE')
@@ -69,7 +97,6 @@ def logout_view(request):
     messages.success(request, "You have been successfully logged out.")
     return redirect('landing-page')
 
-# --- UPDATED post_car_view ---
 @login_required
 def post_car_view(request):
     if request.method == 'POST':
@@ -79,7 +106,6 @@ def post_car_view(request):
             new_listing.seller = request.user
             new_listing.save()
             
-            # Handle the multiple additional images
             images = request.FILES.getlist('additional_images')
             for image in images:
                 CarImage.objects.create(listing=new_listing, image=image)
@@ -90,7 +116,6 @@ def post_car_view(request):
         form = CarListingForm()
     return render(request, 'post_car.html', {'form': form, 'page_title': 'Post Your Car for Sale'})
 
-# ... (my_listings_view and my_listing_detail_view remain the same) ...
 @login_required
 def my_listings_view(request):
     user_listings = CarListing.objects.filter(seller=request.user).order_by('-created_at')
@@ -101,7 +126,6 @@ def my_listing_detail_view(request, pk):
     listing = get_object_or_404(CarListing, id=pk, seller=request.user)
     return render(request, 'car_detail.html', {'car': listing})
 
-# --- UPDATED edit_listing_view ---
 @login_required
 def edit_listing_view(request, pk):
     listing = get_object_or_404(CarListing, id=pk, seller=request.user)
@@ -110,7 +134,6 @@ def edit_listing_view(request, pk):
         if form.is_valid():
             form.save()
             
-            # Handle any newly uploaded additional images
             images = request.FILES.getlist('additional_images')
             for image in images:
                 CarImage.objects.create(listing=listing, image=image)
@@ -123,26 +146,15 @@ def edit_listing_view(request, pk):
 
 @login_required
 def delete_car_image_view(request, image_pk):
-    """
-    Deletes a single additional car image.
-    """
-    # Find the image by its unique ID
     image_to_delete = get_object_or_404(CarImage, pk=image_pk)
     listing = image_to_delete.listing
-
-    # Security check: Ensure the person deleting the image is the seller
     if request.user != listing.seller:
         messages.error(request, "You are not authorized to delete this image.")
         return redirect('my-listings')
-
-    # Delete the image and show a success message
     image_to_delete.delete()
     messages.success(request, "Image deleted successfully.")
-
-    # Redirect back to the edit page for that same listing
     return redirect('edit-listing', pk=listing.pk)
 
-# ... (all other views from delete_listing_view to the end remain the same) ...
 @login_required
 def delete_listing_view(request, pk):
     listing = get_object_or_404(CarListing, id=pk, seller=request.user)
@@ -229,21 +241,37 @@ def inbox_view(request):
     }
     return render(request, 'inbox.html', context)
 
+# --- UPDATED conversation_view ---
 @login_required
 def conversation_view(request, listing_pk, other_user_pk):
     listing = get_object_or_404(CarListing, id=listing_pk)
     other_user = get_object_or_404(User, id=other_user_pk)
+    
+    # --- FINAL, CORRECTED AUTHORIZATION CHECK ---
+    # The participants in the conversation are the logged-in user and the 'other_user' from the URL.
+    # A valid conversation must involve the seller of the car. This single check works for all cases.
     if listing.seller not in [request.user, other_user]:
         messages.error(request, "You are not authorized to view this conversation.")
         return redirect('inbox')
+    
     if request.user == other_user:
         messages.error(request, "Invalid conversation.")
         return redirect('inbox')
+
+    # --- FIX: Mark messages as read when the conversation is viewed ---
+    Message.objects.filter(
+        listing=listing, 
+        sender=other_user, 
+        receiver=request.user, 
+        is_read=False
+    ).update(is_read=True)
+
     conversation_messages = Message.objects.filter(
         listing=listing,
         sender__in=[request.user, other_user],
         receiver__in=[request.user, other_user]
     ).order_by('timestamp')
+    
     if request.method == 'POST':
         reply_form = MessageForm(request.POST)
         if reply_form.is_valid():
@@ -256,6 +284,7 @@ def conversation_view(request, listing_pk, other_user_pk):
             return redirect('conversation', listing_pk=listing.pk, other_user_pk=other_user.pk)
     else:
         reply_form = MessageForm()
+        
     context = {
         'listing': listing,
         'other_user': other_user,
