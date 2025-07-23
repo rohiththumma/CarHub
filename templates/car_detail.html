@@ -65,6 +65,15 @@
                         <p class="text-sm text-gray-500">Transmission</p>
                         <p class="font-semibold text-black">{{ car.transmission }}</p>
                     </div>
+                    <!-- --- NEW: NOC STATUS DISPLAY --- -->
+                    <div class="col-span-2">
+                        <p class="text-sm text-gray-500">NOC Certificate</p>
+                        {% if car.noc_available %}
+                            <p class="font-semibold text-green-600">Available</p>
+                        {% else %}
+                            <p class="font-semibold text-gray-600">Not Available</p>
+                        {% endif %}
+                    </div>
                 </div>
 
                 <!-- Description -->
