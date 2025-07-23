@@ -4,8 +4,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-# --- FIX: Added Profile to the import list ---
-from .models import CarListing, Message, User, Review, Profile
+# --- Import CarImage ---
+from .models import CarListing, Message, User, Review, Profile, CarImage
 from .forms import (
     CarListingForm, UserUpdateForm, ProfileUpdateForm, 
     MessageForm, CarFilterForm, ReviewForm
@@ -13,8 +13,7 @@ from .forms import (
 from django.contrib.auth import logout
 from django.db.models import Q, Avg
 
-# --- HELPER FUNCTION and other views are here... ---
-# (The rest of your views.py file remains the same)
+# ... (all other views from landing_page_view to logout_view remain the same) ...
 def landing_page_view(request):
     featured_listings = CarListing.objects.filter(status='ACTIVE').order_by('-created_at')[:3]
     return render(request, 'landing.html', {'featured_listings': featured_listings})
@@ -70,6 +69,7 @@ def logout_view(request):
     messages.success(request, "You have been successfully logged out.")
     return redirect('landing-page')
 
+# --- UPDATED post_car_view ---
 @login_required
 def post_car_view(request):
     if request.method == 'POST':
@@ -78,12 +78,19 @@ def post_car_view(request):
             new_listing = form.save(commit=False)
             new_listing.seller = request.user
             new_listing.save()
+            
+            # Handle the multiple additional images
+            images = request.FILES.getlist('additional_images')
+            for image in images:
+                CarImage.objects.create(listing=new_listing, image=image)
+            
             messages.success(request, 'Your car has been listed! It is now pending admin approval.')
             return redirect('my-listings')
     else:
         form = CarListingForm()
     return render(request, 'post_car.html', {'form': form, 'page_title': 'Post Your Car for Sale'})
 
+# ... (my_listings_view and my_listing_detail_view remain the same) ...
 @login_required
 def my_listings_view(request):
     user_listings = CarListing.objects.filter(seller=request.user).order_by('-created_at')
@@ -94,6 +101,7 @@ def my_listing_detail_view(request, pk):
     listing = get_object_or_404(CarListing, id=pk, seller=request.user)
     return render(request, 'car_detail.html', {'car': listing})
 
+# --- UPDATED edit_listing_view ---
 @login_required
 def edit_listing_view(request, pk):
     listing = get_object_or_404(CarListing, id=pk, seller=request.user)
@@ -101,12 +109,19 @@ def edit_listing_view(request, pk):
         form = CarListingForm(request.POST, request.FILES, instance=listing)
         if form.is_valid():
             form.save()
+            
+            # Handle any newly uploaded additional images
+            images = request.FILES.getlist('additional_images')
+            for image in images:
+                CarImage.objects.create(listing=listing, image=image)
+                
             messages.success(request, "Your listing has been updated successfully!")
             return redirect('my-listings')
     else:
         form = CarListingForm(instance=listing)
     return render(request, 'edit_listing.html', {'form': form, 'page_title': f"Editing: {listing.make} {listing.model}"})
 
+# ... (all other views from delete_listing_view to the end remain the same) ...
 @login_required
 def delete_listing_view(request, pk):
     listing = get_object_or_404(CarListing, id=pk, seller=request.user)
@@ -150,18 +165,14 @@ def profile_view(request, username):
     context = {'profile_user': profile_user, 'reviews': reviews, 'average_rating': average_rating}
     return render(request, 'profile.html', context)
 
-# --- THIS VIEW IS NOW CORRECTED ---
 @login_required
 def edit_profile_view(request):
-    # This ensures a profile exists. If the user was created before the Profile
-    # model, this line will create a profile for them on their first visit here.
     profile, created = Profile.objects.get_or_create(user=request.user)
-
     if request.method == 'POST':
         u_form = UserUpdateForm(request.POST, instance=request.user)
         p_form = ProfileUpdateForm(request.POST,
                                    request.FILES,
-                                   instance=profile) # Use the profile object
+                                   instance=profile)
         if u_form.is_valid() and p_form.is_valid():
             u_form.save()
             p_form.save()
@@ -169,7 +180,7 @@ def edit_profile_view(request):
             return redirect('profile', username=request.user.username)
     else:
         u_form = UserUpdateForm(instance=request.user)
-        p_form = ProfileUpdateForm(instance=profile) # Use the profile object
+        p_form = ProfileUpdateForm(instance=profile)
     context = {
         'u_form': u_form,
         'p_form': p_form,

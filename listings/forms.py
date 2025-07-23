@@ -4,12 +4,20 @@ from django import forms
 from django.contrib.auth.models import User
 from .models import CarListing, Message, Review, Profile, TRANSMISSION_CHOICES, FUEL_TYPE_CHOICES
 
-# ... (CarListingForm remains the same) ...
 class CarListingForm(forms.ModelForm):
+    additional_images = forms.FileField(
+        required=False,
+        # --- FIX: Use a simple FileInput. The 'multiple' attribute will be added in the template. ---
+        widget=forms.FileInput(attrs={
+            'class': 'w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100'
+        }),
+        label="Additional Photos (Select multiple files)"
+    )
+
     class Meta:
         model = CarListing
         fields = [
-            'make', 'model', 'year', 'price', 
+            'make', 'model', 'year', 'price', 'kms_driven',
             'image', 'mileage', 'transmission', 'fuel_type',
             'noc_available',
             'description', 'location_city'
@@ -19,6 +27,7 @@ class CarListingForm(forms.ModelForm):
             'model': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500'}),
             'year': forms.NumberInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500'}),
             'price': forms.NumberInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500'}),
+            'kms_driven': forms.NumberInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500'}),
             'image': forms.FileInput(attrs={'class': 'w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100'}),
             'mileage': forms.NumberInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500'}),
             'transmission': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500'}),
@@ -28,6 +37,7 @@ class CarListingForm(forms.ModelForm):
             'location_city': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500'}),
         }
 
+# ... (The rest of the file is unchanged) ...
 class UserUpdateForm(forms.ModelForm):
     email = forms.EmailField(required=True)
     class Meta:
@@ -39,7 +49,6 @@ class UserUpdateForm(forms.ModelForm):
             'email': forms.EmailInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500'}),
         }
 
-# --- ADD THIS NEW FORM FOR PROFILE PICTURES ---
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = Profile
@@ -48,7 +57,6 @@ class ProfileUpdateForm(forms.ModelForm):
             'image': forms.FileInput(attrs={'class': 'w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100'}),
         }
 
-# ... (MessageForm, CarFilterForm, and ReviewForm remain the same) ...
 class MessageForm(forms.ModelForm):
     class Meta:
         model = Message

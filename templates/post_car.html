@@ -14,7 +14,6 @@
     <form method="POST" enctype="multipart/form-data" class="space-y-6">
         {% csrf_token %}
         
-        <!-- Manually rendering fields for better control and styling -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
                 <label for="{{ form.make.id_for_label }}" class="block text-sm font-medium text-gray-700">Make</label>
@@ -32,11 +31,22 @@
                 <label for="{{ form.price.id_for_label }}" class="block text-sm font-medium text-gray-700">Price (INR)</label>
                 {{ form.price }}
             </div>
+            <!-- --- NEW KMS DRIVEN FIELD --- -->
+            <div>
+                <label for="{{ form.kms_driven.id_for_label }}" class="block text-sm font-medium text-gray-700">Kilometers Driven</label>
+                {{ form.kms_driven }}
+            </div>
         </div>
 
         <div>
-            <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-gray-700">Image</label>
+            <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-gray-700">Main Image</label>
             {{ form.image }}
+        </div>
+        
+        <!-- --- NEW ADDITIONAL IMAGES FIELD --- -->
+        <div>
+            <label for="{{ form.additional_images.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.additional_images.label }}</label>
+            {{ form.additional_images }}
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -64,12 +74,10 @@
             {{ form.location_city }}
         </div>
 
-        <!-- --- THIS IS THE NEW NOC CHECKBOX --- -->
         <div class="flex items-center space-x-3 border-t border-gray-200 pt-6">
             {{ form.noc_available }}
             <label for="{{ form.noc_available.id_for_label }}" class="text-sm font-medium text-gray-700">{{ form.noc_available.label }}</label>
         </div>
-
 
         <div class="pt-4">
             <button type="submit" class="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-700 transition-colors duration-300 text-lg">
