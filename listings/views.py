@@ -121,6 +121,27 @@ def edit_listing_view(request, pk):
         form = CarListingForm(instance=listing)
     return render(request, 'edit_listing.html', {'form': form, 'page_title': f"Editing: {listing.make} {listing.model}"})
 
+@login_required
+def delete_car_image_view(request, image_pk):
+    """
+    Deletes a single additional car image.
+    """
+    # Find the image by its unique ID
+    image_to_delete = get_object_or_404(CarImage, pk=image_pk)
+    listing = image_to_delete.listing
+
+    # Security check: Ensure the person deleting the image is the seller
+    if request.user != listing.seller:
+        messages.error(request, "You are not authorized to delete this image.")
+        return redirect('my-listings')
+
+    # Delete the image and show a success message
+    image_to_delete.delete()
+    messages.success(request, "Image deleted successfully.")
+
+    # Redirect back to the edit page for that same listing
+    return redirect('edit-listing', pk=listing.pk)
+
 # ... (all other views from delete_listing_view to the end remain the same) ...
 @login_required
 def delete_listing_view(request, pk):

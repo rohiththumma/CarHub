@@ -13,6 +13,8 @@ urlpatterns = [
     path('my-listings/', views.my_listings_view, name='my-listings'),
     path('my-listings/<int:pk>/', views.my_listing_detail_view, name='my-listing-detail'),
     path('my-listings/<int:pk>/edit/', views.edit_listing_view, name='edit-listing'),
+    path('my-listings/image/<int:image_pk>/delete/', views.delete_car_image_view, name='delete-car-image'),
+    path('my-listings/<int:pk>/mark-sold/', views.mark_as_sold_view, name='mark-as-sold'),
     path('my-listings/<int:pk>/delete/', views.delete_listing_view, name='delete-listing'),
     path('wishlist/', views.wishlist_view, name='wishlist'),
     path('wishlist/toggle/<int:pk>/', views.toggle_wishlist_view, name='toggle-wishlist'),
@@ -26,3 +28,5 @@ urlpatterns = [
     path('my-purchases/', views.my_purchases_view, name='my-purchases'),
     path('my-purchases/<int:listing_pk>/review/', views.leave_review_view, name='leave-review'),
 ]
+    
+    

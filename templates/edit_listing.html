@@ -47,17 +47,22 @@
         <!-- --- SECTION FOR ADDITIONAL IMAGES --- -->
         <div>
             <label for="{{ form.additional_images.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.additional_images.label }}</label>
-            {{ form.additional_images }}
+            <!-- We add the 'multiple' attribute here in the HTML -->
+            <input type="file" name="additional_images" id="{{ form.additional_images.id_for_label }}" multiple class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100">
             
-            <!-- Display existing additional images -->
+            <!-- Display existing additional images with delete buttons -->
             {% if form.instance.additional_images.all %}
             <div class="mt-4">
                 <p class="text-sm font-medium text-gray-700 mb-2">Current Additional Photos:</p>
                 <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
                     {% for img in form.instance.additional_images.all %}
-                    <a href="{{ img.image.url }}" target="_blank">
+                    <div class="relative group">
                         <img src="{{ img.image.url }}" alt="Additional photo" class="h-24 w-24 object-cover rounded-md">
-                    </a>
+                        <!-- Delete Button Overlay -->
+                        <a href="{% url 'delete-car-image' img.id %}" class="absolute top-0 right-0 bg-red-600 text-white rounded-full h-6 w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" title="Delete Image">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </a>
+                    </div>
                     {% endfor %}
                 </div>
             </div>
