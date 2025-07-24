@@ -1,3 +1,5 @@
+# File: listings/models.py
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator 
@@ -32,10 +34,8 @@ class CarListing(models.Model):
     year = models.PositiveIntegerField()
     price = models.PositiveIntegerField(help_text="Price in INR")
     
-    # --- NEW FIELD ADDED ---
-    kms_driven = models.PositiveIntegerField(help_text="Kilometers driven")
+    kms_driven = models.PositiveIntegerField(help_text="Kilometers driven", default=0)
     
-    # This is now the MAIN or COVER image for the listing
     image = models.ImageField(upload_to='car_images/', default='car_images/default.png', verbose_name="Main Image")
 
     mileage = models.PositiveIntegerField(help_text="Mileage in KMPL or KM/Charge")
@@ -54,25 +54,23 @@ class CarListing(models.Model):
     
     wishlist = models.ManyToManyField(User, related_name='wishlist_items', blank=True)
     
+    # --- NEW FIELD FOR VIEW COUNT ---
+    views = models.PositiveIntegerField(default=0)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.year} {self.make} {self.model} - ₹{self.price}"
 
-# --- NEW MODEL TO STORE ADDITIONAL IMAGES ---
+# ... (CarImage, Message, Review, and Profile models remain the same) ...
 class CarImage(models.Model):
-    """
-    A model to store multiple additional images for a single car listing.
-    """
     listing = models.ForeignKey(CarListing, related_name='additional_images', on_delete=models.CASCADE)
     image = models.ImageField(upload_to='car_images/additional/')
 
     def __str__(self):
         return f"Image for {self.listing.make} {self.listing.model}"
 
-
-# ... (Message, Review, and Profile models remain the same) ...
 class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')

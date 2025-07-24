@@ -10,9 +10,10 @@ from .forms import (
     MessageForm, CarFilterForm, ReviewForm
 )
 from django.contrib.auth import logout
-from django.db.models import Q, Avg
+# --- Import F and Count ---
+from django.db.models import Q, Avg, Count, F
 
-# ... (all other views from landing_page_view to inbox_view remain the same) ...
+# ... (all other views from landing_page_view to car_list_view remain the same) ...
 def landing_page_view(request):
     featured_listings = CarListing.objects.filter(status='ACTIVE').order_by('-created_at')[:3]
     return render(request, 'landing.html', {'featured_listings': featured_listings})
@@ -63,8 +64,20 @@ def car_list_view(request):
     }
     return render(request, 'car_list.html', context)
 
+# --- UPDATED car_detail_view ---
 def car_detail_view(request, pk):
     car = get_object_or_404(CarListing, id=pk, status='ACTIVE')
+    
+    # --- Increment the view counter ---
+    # We only increment if the user is logged in and is NOT the seller.
+    if request.user.is_authenticated and request.user != car.seller:
+        # F() is a database-level operation that prevents race conditions.
+        # It's the safest way to increment a value.
+        car.views = F('views') + 1
+        car.save()
+        # We must refresh the object from the database to see the new value
+        car.refresh_from_db()
+
     message_form = MessageForm()
     if request.method == 'POST':
         if not request.user.is_authenticated:
@@ -79,8 +92,10 @@ def car_detail_view(request, pk):
             new_message.save()
             messages.success(request, f"Your message has been sent to {car.seller.username}.")
             return redirect('car-detail', pk=pk)
+            
     return render(request, 'car_detail.html', {'car': car, 'message_form': message_form})
 
+# ... (all other views from signup_view to post_car_view remain the same) ...
 def signup_view(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
@@ -116,9 +131,18 @@ def post_car_view(request):
         form = CarListingForm()
     return render(request, 'post_car.html', {'form': form, 'page_title': 'Post Your Car for Sale'})
 
+# --- UPDATED my_listings_view ---
 @login_required
 def my_listings_view(request):
-    user_listings = CarListing.objects.filter(seller=request.user).order_by('-created_at')
+    user_listings_query = CarListing.objects.filter(seller=request.user)
+    
+    # We annotate the queryset to get the wishlist count for each listing
+    user_listings = user_listings_query.annotate(
+        wishlist_count=Count('wishlist')
+    ).order_by('-created_at')
+
+    # The 'views' count is already on the model, so we don't need to annotate it.
+    # We can access it directly in the template as 'listing.views'.
     return render(request, 'my_listings.html', {'listings': user_listings, 'page_title': 'My Car Listings'})
 
 @login_required
@@ -241,15 +265,11 @@ def inbox_view(request):
     }
     return render(request, 'inbox.html', context)
 
-# --- UPDATED conversation_view ---
 @login_required
 def conversation_view(request, listing_pk, other_user_pk):
     listing = get_object_or_404(CarListing, id=listing_pk)
     other_user = get_object_or_404(User, id=other_user_pk)
     
-    # --- FINAL, CORRECTED AUTHORIZATION CHECK ---
-    # The participants in the conversation are the logged-in user and the 'other_user' from the URL.
-    # A valid conversation must involve the seller of the car. This single check works for all cases.
     if listing.seller not in [request.user, other_user]:
         messages.error(request, "You are not authorized to view this conversation.")
         return redirect('inbox')
@@ -258,7 +278,6 @@ def conversation_view(request, listing_pk, other_user_pk):
         messages.error(request, "Invalid conversation.")
         return redirect('inbox')
 
-    # --- FIX: Mark messages as read when the conversation is viewed ---
     Message.objects.filter(
         listing=listing, 
         sender=other_user, 

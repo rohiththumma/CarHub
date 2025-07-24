@@ -11,7 +11,7 @@
             {{ page_title }}
         </h1>
         <p class="mt-4 text-xl text-gray-600">
-            Manage your car listings. You can view, edit, or delete them here.
+            Manage and track the performance of your car listings.
         </p>
     </header>
 
@@ -44,12 +44,24 @@
                                 <span class="font-bold text-yellow-600">{{ listing.get_status_display }}</span>
                             {% endif %}
                         </p>
+                        <!-- --- UPDATED STATS SECTION --- -->
+                        <div class="mt-2 flex items-center space-x-4 text-sm text-gray-600">
+                            <!-- Wishlist Count -->
+                            <div class="flex items-center" title="Wishlisted by {{ listing.wishlist_count }} user{{ listing.wishlist_count|pluralize }}">
+                                <svg class="w-5 h-5 text-red-500 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path></svg>
+                                <span>{{ listing.wishlist_count }}</span>
+                            </div>
+                            <!-- View Count -->
+                            <div class="flex items-center" title="{{ listing.views }} view{{ listing.views|pluralize }}">
+                                <svg class="w-5 h-5 text-blue-500 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>
+                                <span>{{ listing.views }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Action Buttons -->
                 <div class="flex items-center space-x-2">
-                    <!-- THIS IS THE CORRECTED VIEW BUTTON -->
                     <a href="{% url 'my-listing-detail' listing.id %}" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-300">
                         View
                     </a>
@@ -59,6 +71,11 @@
                     <a href="{% url 'delete-listing' listing.id %}" class="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors duration-300">
                         Delete
                     </a>
+                    {% if listing.status == 'ACTIVE' %}
+                        <a href="{% url 'mark-as-sold' listing.id %}" class="bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition-colors duration-300">
+                            Mark as Sold
+                        </a>
+                    {% endif %}
                 </div>
             </div>
             {% empty %}
