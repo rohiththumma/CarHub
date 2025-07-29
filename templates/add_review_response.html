@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Respond to Review - CarHub{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-black text-center">{{ page_title }}</h1>
+
+        <div class="mt-6 bg-gray-50 p-4 rounded-lg border-l-4 border-gray-300">
+            <p class="text-sm text-gray-600">Original review from <span class="font-semibold">{{ review.reviewer.username }}</span>:</p>
+            <blockquote class="mt-2 text-gray-800 italic">"{{ review.comment }}"</blockquote>
+        </div>
+    </div>
+
+    <form method="POST" class="space-y-6">
+        {% csrf_token %}
+        
+        <div>
+            <label for="{{ form.seller_response.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.seller_response.label }}</label>
+            {{ form.seller_response }}
+        </div>
+
+        <div class="pt-4">
+            <button type="submit" class="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-700 transition-colors duration-300 text-lg">
+                Submit Response
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

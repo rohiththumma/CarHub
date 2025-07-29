@@ -27,6 +27,7 @@ urlpatterns = [
     path('inbox/conversation/<int:listing_pk>/<int:other_user_pk>/', views.conversation_view, name='conversation'),
     path('my-purchases/', views.my_purchases_view, name='my-purchases'),
     path('my-purchases/<int:listing_pk>/review/', views.leave_review_view, name='leave-review'),
+    path('reviews/<int:review_pk>/respond/', views.add_review_response_view, name='add-review-response'),
 ]
     
     

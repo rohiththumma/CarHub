@@ -91,6 +91,7 @@ class Review(models.Model):
     )
     comment = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+    seller_response = models.TextField(null=True, blank=True, verbose_name="Seller's Response")
 
     def __str__(self):
         return f"Review for {self.seller.username} by {self.reviewer.username} ({self.rating} stars)"

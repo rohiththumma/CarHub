@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from .models import CarListing, Message, User, Review, Profile, CarImage
 from .forms import (
     CarListingForm, UserUpdateForm, ProfileUpdateForm, 
-    MessageForm, CarFilterForm, ReviewForm
+    MessageForm, CarFilterForm, ReviewForm,  SellerResponseForm
 )
 from django.contrib.auth import logout
 # --- Import F and Count ---
@@ -373,3 +373,33 @@ def unread_messages_context(request):
         unread_count = Message.objects.filter(receiver=request.user, is_read=False).count()
         return {'unread_messages_count': unread_count}
     return {}
+
+@login_required
+def add_review_response_view(request, review_pk):
+    review = get_object_or_404(Review, pk=review_pk)
+
+    # Security check: only the seller who received the review can respond
+    if request.user != review.seller:
+        messages.error(request, "You are not authorized to respond to this review.")
+        return redirect('profile', username=review.seller.username)
+
+    # Check if a response already exists
+    if review.seller_response:
+        messages.error(request, "A response has already been submitted for this review.")
+        return redirect('profile', username=review.seller.username)
+
+    if request.method == 'POST':
+        form = SellerResponseForm(request.POST, instance=review)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your response has been added successfully.")
+            return redirect('profile', username=request.user.username)
+    else:
+        form = SellerResponseForm(instance=review)
+
+    context = {
+        'form': form,
+        'review': review,
+        'page_title': 'Respond to Review'
+    }
+    return render(request, 'add_review_response.html', context)

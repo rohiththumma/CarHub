@@ -69,6 +69,18 @@
                     {% endfor %}
                 </div>
                 <p class="text-gray-700">{{ review.comment }}</p>
+				{% if review.seller_response %}
+    <div class="mt-4 ml-8 bg-gray-100 p-4 rounded-md border-l-4 border-red-200">
+        <p class="text-sm font-semibold text-gray-800">Response from {{ review.seller.username }}:</p>
+        <p class="text-gray-700 mt-1">{{ review.seller_response }}</p>
+    </div>
+{% elif user == profile_user %}
+    <div class="mt-3 text-right">
+        <a href="{% url 'add-review-response' review.id %}" class="inline-block bg-gray-200 text-black text-xs font-bold py-1 px-3 rounded-lg hover:bg-gray-300 transition-colors">
+            Add Response
+        </a>
+    </div>
+{% endif %}
             </div>
             {% empty %}
             <div class="bg-white p-6 rounded-lg shadow-md text-center">
