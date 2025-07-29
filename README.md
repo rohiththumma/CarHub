@@ -93,15 +93,6 @@ To get a local copy up and running, follow these simple steps.
 
 ---
 
-## 📸 Screenshots
-
-<!-- Suggestion: Add more screenshots of key features -->
-* *Screenshot of the Car Detail Page*
-* *Screenshot of the "My Listings" Seller Dashboard*
-* *Screenshot of the Admin Panel*
-
----
-
 ## 🔮 Future Enhancements
 
 This project has a solid foundation. Future features could include:
