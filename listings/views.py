@@ -362,3 +362,14 @@ def compare_cars_view(request):
         car_ids = car_ids_str.split(',')
         cars_to_compare = CarListing.objects.filter(id__in=car_ids)
     return render(request, 'compare.html', {'cars': cars_to_compare, 'page_title': 'Compare Cars'})
+
+def unread_messages_context(request):
+    """
+    Makes the count of unread messages available on all pages.
+    """
+    if request.user.is_authenticated:
+        # We query the Message model where the receiver is the current user
+        # and the 'is_read' flag is False[cite: 8].
+        unread_count = Message.objects.filter(receiver=request.user, is_read=False).count()
+        return {'unread_messages_count': unread_count}
+    return {}
