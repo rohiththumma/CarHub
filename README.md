@@ -26,8 +26,6 @@ CarHub is packed with features designed to provide a seamless and trustworthy ex
 * **Secure User Authentication:** Complete user registration, login, logout, and password management system.
 * **Custom Admin Dashboard:** A powerful admin panel with custom analytics, including charts for listings by brand and status, and key metrics like total users and cars sold.
 * **Full Moderation:** Administrators can manage all car listings, users, messages, and reviews from the backend.
-* **Email Notifications (Development):** The system is configured to send email notifications to sellers when they receive a new message (currently prints to the console for development).
-
 ---
 
 ## 🛠️ Tech Stack
