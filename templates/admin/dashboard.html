@@ -40,6 +40,40 @@
             <canvas id="statusChart"></canvas>
         </div>
     </div>
+	
+	<div style="background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 1.5rem;">
+    <h3 style="font-weight: bold; margin-bottom: 1rem;">Recent Activity</h3>
+    <ul style="list-style: none; padding: 0; margin: 0; max-height: 400px; overflow-y: auto;">
+    {% for item in activity_feed %}
+        <li style="display: flex; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #f0f0f0;">
+            <!-- Icon -->
+            <div style="margin-right: 1rem; color: #555;">
+                {% if item.activity_type == 'User' %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                {% elif item.activity_type == 'Listing' %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 16.5V18a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-1.5"></path><path d="M18 12h.01"></path><path d="M6 12h.01"></path><path d="M12 12h.01"></path><path d="M12 8.5V12"></path><path d="M7 19h10"></path><path d="M17 16.5c.33-.2.67-.33 1-.5 1.5-.66 2.5-2.16 2.5-3.5C20.5 9 18 7 15 7s-5.5 2-5.5 5c0 1.34 1 2.84 2.5 3.5.33.17.67.3 1 .5"></path></svg>
+                {% elif item.activity_type == 'Review' %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                {% endif %}
+            </div>
+            <!-- Activity Text (takes full width now) -->
+            <div style="flex-grow: 1; color: #333;">
+                {% if item.activity_type == 'User' %}
+                    User <a href="{% url 'admin:auth_user_change' item.id %}" style="color: #007bff; text-decoration: none;"><strong>{{ item.username }}</strong></a> just signed up.
+                {% elif item.activity_type == 'Listing' %}
+                    A new listing <a href="{% url 'admin:listings_carlisting_change' item.id %}" style="color: #007bff; text-decoration: none;"><strong>{{ item }}</strong></a> was posted by {{ item.seller.username }}.
+                {% elif item.activity_type == 'Review' %}
+                    A new review was left for <a href="{% url 'admin:auth_user_change' item.seller.id %}" style="color: #007bff; text-decoration: none;"><strong>{{ item.seller.username }}</strong></a> by {{ item.reviewer.username }}.
+                {% endif %}
+            </div>
+            <!-- The timestamp div has been completely removed -->
+        </li>
+    {% empty %}
+        <li style="padding: 1rem; text-align: center; color: #666;">No recent activity.</li>
+    {% endfor %}
+</ul>
+    </ul>
+    </div>
 
     <!-- This loads the Chart.js library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
