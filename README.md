@@ -67,7 +67,3 @@ To run this project locally, follow these steps:
 ## 🤖 AI-Assisted Development
 
 This project was developed by a single developer. To enhance productivity and explore modern development workflows, AI assistance (powered by Google Gemini) was used for tasks such as code analysis, feature brainstorming, debugging, and generating boilerplate content. All core logic and final implementation were directed and written by the developer.
-
-## 📸 Screenshots
-
-*(You should add screenshots of your application here to showcase the different pages like the landing page, car detail page, and the admin dashboard.)*
